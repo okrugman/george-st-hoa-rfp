@@ -240,11 +240,11 @@
             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
           <span class="text-slate-700 font-medium" id="syncStatusText">
-            Connected to Live Google Sheet (<code class="bg-slate-100 text-slate-800 px-1 py-0.5 rounded text-[11px]">1FziqM250...DFwsc</code>)
+            Connecting to Google Sheet (<code class="bg-slate-100 text-slate-800 px-1 py-0.5 rounded text-[11px]">1FziqM250...DFwsc</code>)
           </span>
         </div>
         <div class="flex items-center gap-2">
-          <span id="syncTimestamp" class="text-slate-400 text-[11px]">Loading live data...</span>
+          <span id="syncTimestamp" class="text-slate-400 text-[11px]">Checking status...</span>
           <button onclick="fetchSheetData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2.5 py-1 rounded border border-slate-300 transition flex items-center gap-1 text-xs">
             <i class="fa-solid fa-arrows-rotate text-blue-600"></i> Refresh
           </button>
@@ -333,67 +333,7 @@
     const SPREADSHEET_ID = "1FziqM250BOvkoCDLZqPzlKoM3iJ4GK_N7olfPpDFwsc";
     const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json`;
 
-    // Local Storage backup key
-    const STORAGE_KEY = 'hoa_rfp_proposals_list';
-
-    let defaultSeedProposals = [
-      {
-        id: "1",
-        timestamp: "2026-11-16 10:15",
-        companyName: "First Community Management",
-        contactName: "David Miller, VP",
-        contactEmail: "dmiller@firstcomm.com",
-        contactPhone: "(312) 829-8900",
-        officeAddress: "1720 W Division St, Chicago, IL",
-        yearsInBusiness: 24,
-        walkthroughFreq: "Bi-weekly (2x / month)",
-        inspectionReports: "Yes - Full digital photo report",
-        managerRatio: "8 properties / manager",
-        emergencyProtocol: "24/7 Live Operator Dispatch",
-        disputeWorkflow: "Formal written notice, mandatory 14-day cure, hearing notice before fine per ICPA",
-        accountingBasis: "Accrual Basis (ICPA Recommended)",
-        bankingType: "100% Segregated Accounts (Association TIN)",
-        authThreshold: 500,
-        financialDate: "By 15th of month",
-        lienWaivers: "Yes - Required before payment",
-        paymentMethods: "Free ACH Autopay, Mobile App, Check Lockbox",
-        baseFee: 850,
-        setupFee: 500,
-        techFee: 0,
-        meetingsIncluded: 4,
-        extraMeetingFee: 150,
-        contractorMarkup: "0%"
-      },
-      {
-        id: "2",
-        timestamp: "2026-11-16 11:40",
-        companyName: "Connected Management",
-        contactName: "Sarah Jenkins, CAM",
-        contactEmail: "sjenkins@connectedmgmt.com",
-        contactPhone: "(312) 640-9000",
-        officeAddress: "4001 N Ravenswood Ave, Chicago, IL",
-        yearsInBusiness: 18,
-        walkthroughFreq: "Monthly (1x / month)",
-        inspectionReports: "Yes - Full digital photo report",
-        managerRatio: "10 properties / manager",
-        emergencyProtocol: "24/7 Live Operator Dispatch",
-        disputeWorkflow: "Online ticket log, manager outreach call, board escalation with fining schedule",
-        accountingBasis: "Accrual Basis (ICPA Recommended)",
-        bankingType: "100% Segregated Accounts (Association TIN)",
-        authThreshold: 750,
-        financialDate: "By 20th of month",
-        lienWaivers: "Yes - Required before payment",
-        paymentMethods: "AppFolio Online Portal, ACH, Debit/Credit",
-        baseFee: 775,
-        setupFee: 400,
-        techFee: 25,
-        meetingsIncluded: 4,
-        extraMeetingFee: 175,
-        contractorMarkup: "0%"
-      }
-    ];
-
-    let proposals = defaultSeedProposals;
+    let proposals = [];
     let selectedIds = new Set();
 
     // Check query params for tab routing: ?tab=form opens the submission form directly
@@ -422,20 +362,28 @@
 
       try {
         const response = await fetch(GVIZ_URL);
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
         const text = await response.text();
         
         // Extract JSON from Google's response: /*O_o*/ google.visualization.Query.setResponse({...});
-        const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+        const jsonStart = text.indexOf('{');
+        const jsonEnd = text.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1) {
+          throw new Error('Invalid response format');
+        }
+        
+        const jsonString = text.substring(jsonStart, jsonEnd + 1);
         const gvizData = JSON.parse(jsonString);
 
-        if (gvizData && gvizData.table && gvizData.table.rows && gvizData.table.rows.length > 0) {
-          const rows = gvizData.table.rows;
+        if (gvizData && gvizData.table) {
+          const rows = gvizData.table.rows || [];
           const parsed = [];
 
           rows.forEach((row, idx) => {
             const c = row.c || [];
-            // Skip empty rows or header echoes
-            if (!c[1] || !c[1].v) return;
+            if (!c[1] || !c[1].v) return; // skip empty rows
 
             parsed.push({
               id: "sheet_" + idx,
@@ -457,8 +405,8 @@
               financialDate: c[15] ? String(c[15].v) : "15th",
               lienWaivers: c[16] ? String(c[16].v) : "Yes",
               paymentMethods: c[17] ? String(c[17].v) : "ACH / Online",
-              baseFee: c[18] ? Number(c[18].v) : (c[16] ? Number(c[16].v) : 800),
-              setupFee: c[19] ? Number(c[19].v) : 400,
+              baseFee: c[18] ? Number(c[18].v) : 0,
+              setupFee: c[19] ? Number(c[19].v) : 0,
               techFee: c[20] ? Number(c[20].v) : 0,
               meetingsIncluded: c[21] ? Number(c[21].v) : 4,
               extraMeetingFee: c[22] ? Number(c[22].v) : 150,
@@ -466,19 +414,18 @@
             });
           });
 
+          proposals = parsed;
           if (parsed.length > 0) {
-            proposals = parsed;
-            statusText.innerHTML = `Live Sync Active: <strong>${parsed.length}</strong> submissions pulled from Google Sheet`;
-            timestampEl.innerText = `Updated ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            statusText.innerHTML = `Live Sync Active: <strong>${parsed.length}</strong> proposal${parsed.length > 1 ? 's' : ''} loaded from Google Sheet`;
           } else {
-            statusText.innerText = "Google Sheet connected (0 proposals yet; showing sample data)";
-            timestampEl.innerText = "Synced";
+            statusText.innerHTML = `Connected to Google Sheet (Sheet is currently empty — waiting for vendor bids)`;
           }
+          timestampEl.innerText = `Synced at ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}`;
         }
       } catch (err) {
-        console.warn("Could not load from Google gviz (ensure sheet is shared 'Anyone with link can view'):", err);
-        statusText.innerHTML = `<span class="text-amber-600">Note: Ensure Google Sheet Sharing is set to <strong>"Anyone with the link can view"</strong></span>`;
-        timestampEl.innerText = "Local cache active";
+        console.warn("Could not load from Google Sheet:", err);
+        statusText.innerHTML = `<span class="text-amber-600 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Check Sheet Sharing: Set General Access to "Anyone with the link can view"</span>`;
+        timestampEl.innerText = "Sync paused";
       }
 
       renderTable();
@@ -493,6 +440,20 @@
         (p.companyName || '').toLowerCase().includes(search) || 
         (p.accountingBasis || '').toLowerCase().includes(search)
       );
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="12" class="p-8 text-center text-slate-400">
+              <i class="fa-solid fa-inbox text-3xl mb-2 block text-slate-300"></i>
+              <p class="font-medium text-slate-600">No proposals recorded yet in your Google Sheet</p>
+              <p class="text-xs text-slate-400 mt-1">When vendors fill out the "Vendor Submission Form", their bids will populate here automatically.</p>
+            </td>
+          </tr>
+        `;
+        updateKPIs();
+        return;
+      }
 
       filtered.forEach(p => {
         const costPerUnit = (Number(p.baseFee || 0) / 22).toFixed(2);
