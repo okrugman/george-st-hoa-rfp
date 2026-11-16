@@ -43,12 +43,13 @@
     <div id="formView" class="hidden">
       <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-slate-900 text-white p-6 sm:p-8">
-          <div class="flex justify-between items-start">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 class="text-2xl font-bold">HOA Management Formal RFP Submission</h2>
-              <p class="text-slate-300 text-sm mt-1">Please complete all operational, governance, and financial schedule specifications.</p>
+              <span class="bg-blue-500/20 text-blue-300 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-400/30">Official Vendor Portal</span>
+              <h2 class="text-2xl font-bold mt-2">HOA Management Formal RFP Submission</h2>
+              <p class="text-slate-300 text-sm mt-1">Please complete all operational, governance, and financial schedule specifications for 1235 & 1245 W George St (22 Units).</p>
             </div>
-            <button type="button" onclick="fillSampleData()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded transition">
+            <button type="button" onclick="fillSampleData()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded transition shrink-0">
               <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Autofill Sample Bid
             </button>
           </div>
@@ -64,27 +65,27 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <label class="block text-slate-700 font-medium mb-1">Company Legal Name *</label>
-                <input required type="text" id="companyName" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input required type="text" id="companyName" placeholder="e.g. Acme Property Management LLC" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               <div>
                 <label class="block text-slate-700 font-medium mb-1">Chicago Office Address *</label>
-                <input required type="text" id="officeAddress" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input required type="text" id="officeAddress" placeholder="Street, Chicago, IL Zip" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               <div>
                 <label class="block text-slate-700 font-medium mb-1">Primary Contact Name & Title *</label>
-                <input required type="text" id="contactName" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input required type="text" id="contactName" placeholder="Name, Title" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               <div>
                 <label class="block text-slate-700 font-medium mb-1">Email Address *</label>
-                <input required type="email" id="contactEmail" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input required type="email" id="contactEmail" placeholder="contact@company.com" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               <div>
                 <label class="block text-slate-700 font-medium mb-1">Phone Number *</label>
-                <input required type="tel" id="contactPhone" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input required type="tel" id="contactPhone" placeholder="(312) 000-0000" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               <div>
                 <label class="block text-slate-700 font-medium mb-1">Years Managing Chicago Associations *</label>
-                <input required type="number" id="yearsInBusiness" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input required type="number" id="yearsInBusiness" placeholder="Years" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
             </div>
           </div>
@@ -215,9 +216,11 @@
             </div>
           </div>
 
-          <div class="pt-4 flex justify-end gap-3">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow transition">
-              Submit Formal Proposal
+          <div class="pt-4 flex items-center justify-between border-t border-slate-200">
+            <p id="submitStatus" class="text-xs text-slate-500 italic"></p>
+            <button type="submit" id="btnSubmitForm" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2">
+              <span>Submit Formal Proposal</span>
+              <i class="fa-solid fa-paper-plane text-xs"></i>
             </button>
           </div>
         </form>
@@ -226,6 +229,18 @@
 
     <!-- DASHBOARD VIEW -->
     <div id="dashboardView">
+      <!-- Webhook settings accordion for Board -->
+      <div class="mb-4 bg-slate-100 border border-slate-300 rounded-lg p-3 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div class="flex items-center gap-2 text-slate-700">
+          <i class="fa-solid fa-link text-blue-600"></i>
+          <span><strong>Google Sheet Sync:</strong> To automatically stream proposals straight into your Google Sheet, paste your Google Apps Script Web App URL:</span>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <input type="text" id="webhookUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="border rounded px-2 py-1 text-xs w-full sm:w-80 outline-none" />
+          <button onclick="saveWebhookUrl()" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap">Save URL</button>
+        </div>
+      </div>
+
       <!-- Metrics row -->
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -304,8 +319,11 @@
   </main>
 
   <script>
-    // Initial Seed Data (realistic proposals)
-    let proposals = [
+    // Local storage key for proposals & webhook
+    const STORAGE_KEY = 'hoa_rfp_proposals_list';
+    const WEBHOOK_KEY = 'hoa_rfp_google_webhook_url';
+
+    let defaultSeedProposals = [
       {
         id: "1",
         timestamp: "2026-11-16 10:15",
@@ -362,7 +380,13 @@
       }
     ];
 
+    let stored = localStorage.getItem(STORAGE_KEY);
+    let proposals = stored ? JSON.parse(stored) : defaultSeedProposals;
     let selectedIds = new Set();
+
+    // Check query params for tab routing: ?tab=form opens the submission form directly!
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTab = urlParams.get('tab') === 'form' ? 'formView' : 'dashboardView';
 
     function switchTab(viewId) {
       document.getElementById('formView').classList.add('hidden');
@@ -378,14 +402,20 @@
       }
     }
 
+    function saveWebhookUrl() {
+      const url = document.getElementById('webhookUrlInput').value.trim();
+      localStorage.setItem(WEBHOOK_KEY, url);
+      alert("Google Apps Script Webhook URL saved!");
+    }
+
     function renderTable() {
       const tbody = document.getElementById('proposalsTableBody');
       const search = document.getElementById('searchInput').value.toLowerCase();
       tbody.innerHTML = '';
 
       const filtered = proposals.filter(p => 
-        p.companyName.toLowerCase().includes(search) || 
-        p.accountingBasis.toLowerCase().includes(search)
+        (p.companyName || '').toLowerCase().includes(search) || 
+        (p.accountingBasis || '').toLowerCase().includes(search)
       );
 
       filtered.forEach(p => {
@@ -401,9 +431,9 @@
           <td class="p-3 text-slate-700">$${costPerUnit} / unit</td>
           <td class="p-3">$${p.setupFee}</td>
           <td class="p-3">${p.walkthroughFreq}</td>
-          <td class="p-3">${p.inspectionReports.includes('Full digital') ? '<span class="text-emerald-600 font-semibold">Photo Log</span>' : 'Summary'}</td>
-          <td class="p-3">${p.accountingBasis.split(' ')[0]}</td>
-          <td class="p-3">${p.bankingType.includes('Segregated') ? '<span class="text-blue-600 font-medium">Segregated</span>' : '<span class="text-red-500">Commingled</span>'}</td>
+          <td class="p-3">${(p.inspectionReports || '').includes('Full digital') ? '<span class="text-emerald-600 font-semibold">Photo Log</span>' : 'Summary'}</td>
+          <td class="p-3">${(p.accountingBasis || '').split(' ')[0]}</td>
+          <td class="p-3">${(p.bankingType || '').includes('Segregated') ? '<span class="text-blue-600 font-medium">Segregated</span>' : '<span class="text-red-500">Commingled</span>'}</td>
           <td class="p-3">$${p.authThreshold}</td>
           <td class="p-3">${p.managerRatio}</td>
           <td class="p-3 text-right">
@@ -423,7 +453,7 @@
         document.getElementById('kpiAvgUnitCost').innerText = "$0";
         return;
       }
-      const totalBase = proposals.reduce((sum, p) => sum + Number(p.baseFee), 0);
+      const totalBase = proposals.reduce((sum, p) => sum + Number(p.baseFee || 0), 0);
       const avgBase = Math.round(totalBase / proposals.length);
       const avgUnitCost = (avgBase / 22).toFixed(2);
 
@@ -445,6 +475,7 @@
     function deleteProposal(id) {
       if (confirm("Delete this submission?")) {
         proposals = proposals.filter(p => p.id !== id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(proposals));
         selectedIds.delete(id);
         renderTable();
         clearComparison();
@@ -486,8 +517,11 @@
       document.getElementById('compareContainer').classList.add('hidden');
     }
 
-    function handleFormSubmit(e) {
+    async function handleFormSubmit(e) {
       e.preventDefault();
+      const statusText = document.getElementById('submitStatus');
+      const submitBtn = document.getElementById('btnSubmitForm');
+      
       const newProposal = {
         id: String(Date.now()),
         timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
@@ -516,9 +550,31 @@
         contractorMarkup: document.getElementById('contractorMarkup').value
       };
 
+      // Save locally
       proposals.push(newProposal);
-      alert("Proposal submitted and logged successfully!");
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(proposals));
+
+      // Post to Google Sheet webhook if configured
+      const webhookUrl = localStorage.getItem(WEBHOOK_KEY);
+      if (webhookUrl) {
+        statusText.innerText = "Transmitting to Google Sheet...";
+        submitBtn.disabled = true;
+        try {
+          await fetch(webhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newProposal)
+          });
+        } catch (err) {
+          console.warn("Webhook post issue:", err);
+        }
+      }
+
+      alert("Proposal submitted successfully!");
       document.getElementById('rfpForm').reset();
+      submitBtn.disabled = false;
+      statusText.innerText = "";
       switchTab('dashboardView');
       renderTable();
     }
@@ -576,6 +632,10 @@
     });
 
     // Initialize
+    if (localStorage.getItem(WEBHOOK_KEY)) {
+      document.getElementById('webhookUrlInput').value = localStorage.getItem(WEBHOOK_KEY);
+    }
+    switchTab(initialTab);
     renderTable();
   </script>
 </body>
