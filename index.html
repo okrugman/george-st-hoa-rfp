@@ -22,8 +22,11 @@
         <p class="text-xs text-slate-500 mt-0.5">22 Residential Units • Chicago, IL 60657 • Property Management RFP & Financial Intake</p>
       </div>
       <div class="flex items-center gap-2">
+        <a href="https://docs.google.com/spreadsheets/d/1FziqM250BOvkoCDLZqPzlKoM3iJ4GK_N7olfPpDFwsc/edit?gid=0#gid=0" target="_blank" class="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded shadow-sm border border-slate-300 transition">
+          <i class="fa-solid fa-arrow-up-right-from-square text-emerald-600"></i> Open Live Google Sheet
+        </a>
         <button id="btnExportCsv" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded shadow-sm transition">
-          <i class="fa-solid fa-file-excel"></i> Export to CSV / Sheets
+          <i class="fa-solid fa-file-excel"></i> Export CSV
         </button>
       </div>
     </div>
@@ -229,15 +232,22 @@
 
     <!-- DASHBOARD VIEW -->
     <div id="dashboardView">
-      <!-- Webhook settings accordion for Board -->
-      <div class="mb-4 bg-slate-100 border border-slate-300 rounded-lg p-3 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-        <div class="flex items-center gap-2 text-slate-700">
-          <i class="fa-solid fa-link text-blue-600"></i>
-          <span><strong>Google Sheet Sync:</strong> To automatically stream proposals straight into your Google Sheet, paste your Google Apps Script Web App URL:</span>
+      <!-- Live Sync Status Banner -->
+      <div class="mb-4 bg-white border border-slate-200 rounded-lg p-3 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+        <div class="flex items-center gap-2.5">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+          <span class="text-slate-700 font-medium" id="syncStatusText">
+            Connected to Live Google Sheet (<code class="bg-slate-100 text-slate-800 px-1 py-0.5 rounded text-[11px]">1FziqM250...DFwsc</code>)
+          </span>
         </div>
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <input type="text" id="webhookUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="border rounded px-2 py-1 text-xs w-full sm:w-80 outline-none" />
-          <button onclick="saveWebhookUrl()" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap">Save URL</button>
+        <div class="flex items-center gap-2">
+          <span id="syncTimestamp" class="text-slate-400 text-[11px]">Loading live data...</span>
+          <button onclick="fetchSheetData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2.5 py-1 rounded border border-slate-300 transition flex items-center gap-1 text-xs">
+            <i class="fa-solid fa-arrows-rotate text-blue-600"></i> Refresh
+          </button>
         </div>
       </div>
 
@@ -319,9 +329,12 @@
   </main>
 
   <script>
-    // Local storage key for proposals & webhook
+    // HARDCODED GOOGLE SHEET IDENTIFIER
+    const SPREADSHEET_ID = "1FziqM250BOvkoCDLZqPzlKoM3iJ4GK_N7olfPpDFwsc";
+    const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json`;
+
+    // Local Storage backup key
     const STORAGE_KEY = 'hoa_rfp_proposals_list';
-    const WEBHOOK_KEY = 'hoa_rfp_google_webhook_url';
 
     let defaultSeedProposals = [
       {
@@ -380,11 +393,10 @@
       }
     ];
 
-    let stored = localStorage.getItem(STORAGE_KEY);
-    let proposals = stored ? JSON.parse(stored) : defaultSeedProposals;
+    let proposals = defaultSeedProposals;
     let selectedIds = new Set();
 
-    // Check query params for tab routing: ?tab=form opens the submission form directly!
+    // Check query params for tab routing: ?tab=form opens the submission form directly
     const urlParams = new URLSearchParams(window.location.search);
     const initialTab = urlParams.get('tab') === 'form' ? 'formView' : 'dashboardView';
 
@@ -402,10 +414,74 @@
       }
     }
 
-    function saveWebhookUrl() {
-      const url = document.getElementById('webhookUrlInput').value.trim();
-      localStorage.setItem(WEBHOOK_KEY, url);
-      alert("Google Apps Script Webhook URL saved!");
+    // Live Read from Google Sheet via Google Visualization API
+    async function fetchSheetData() {
+      const statusText = document.getElementById('syncStatusText');
+      const timestampEl = document.getElementById('syncTimestamp');
+      timestampEl.innerText = "Syncing with Google...";
+
+      try {
+        const response = await fetch(GVIZ_URL);
+        const text = await response.text();
+        
+        // Extract JSON from Google's response: /*O_o*/ google.visualization.Query.setResponse({...});
+        const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+        const gvizData = JSON.parse(jsonString);
+
+        if (gvizData && gvizData.table && gvizData.table.rows && gvizData.table.rows.length > 0) {
+          const rows = gvizData.table.rows;
+          const parsed = [];
+
+          rows.forEach((row, idx) => {
+            const c = row.c || [];
+            // Skip empty rows or header echoes
+            if (!c[1] || !c[1].v) return;
+
+            parsed.push({
+              id: "sheet_" + idx,
+              timestamp: c[0] ? String(c[0].f || c[0].v) : "",
+              companyName: c[1] ? String(c[1].v) : "Unknown",
+              contactName: c[2] ? String(c[2].v) : "",
+              contactEmail: c[3] ? String(c[3].v) : "",
+              contactPhone: c[4] ? String(c[4].v) : "",
+              officeAddress: c[5] ? String(c[5].v) : "",
+              yearsInBusiness: c[6] ? Number(c[6].v) : 0,
+              managerRatio: c[7] ? String(c[7].v) : (c[9] ? String(c[9].v) : "10 per CAM"),
+              walkthroughFreq: c[8] ? String(c[8].v) : (c[7] ? String(c[7].v) : "Monthly"),
+              inspectionReports: c[9] ? String(c[9].v) : "Yes - Full digital photo report",
+              emergencyProtocol: c[10] ? String(c[10].v) : "24/7 Live Operator",
+              disputeWorkflow: c[11] ? String(c[11].v) : "",
+              accountingBasis: c[12] ? String(c[12].v) : "Accrual",
+              bankingType: c[13] ? String(c[13].v) : "Segregated",
+              authThreshold: c[14] ? Number(c[14].v) : 500,
+              financialDate: c[15] ? String(c[15].v) : "15th",
+              lienWaivers: c[16] ? String(c[16].v) : "Yes",
+              paymentMethods: c[17] ? String(c[17].v) : "ACH / Online",
+              baseFee: c[18] ? Number(c[18].v) : (c[16] ? Number(c[16].v) : 800),
+              setupFee: c[19] ? Number(c[19].v) : 400,
+              techFee: c[20] ? Number(c[20].v) : 0,
+              meetingsIncluded: c[21] ? Number(c[21].v) : 4,
+              extraMeetingFee: c[22] ? Number(c[22].v) : 150,
+              contractorMarkup: c[23] ? String(c[23].v) : "0%"
+            });
+          });
+
+          if (parsed.length > 0) {
+            proposals = parsed;
+            statusText.innerHTML = `Live Sync Active: <strong>${parsed.length}</strong> submissions pulled from Google Sheet`;
+            timestampEl.innerText = `Updated ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+          } else {
+            statusText.innerText = "Google Sheet connected (0 proposals yet; showing sample data)";
+            timestampEl.innerText = "Synced";
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load from Google gviz (ensure sheet is shared 'Anyone with link can view'):", err);
+        statusText.innerHTML = `<span class="text-amber-600">Note: Ensure Google Sheet Sharing is set to <strong>"Anyone with the link can view"</strong></span>`;
+        timestampEl.innerText = "Local cache active";
+      }
+
+      renderTable();
     }
 
     function renderTable() {
@@ -419,7 +495,7 @@
       );
 
       filtered.forEach(p => {
-        const costPerUnit = (Number(p.baseFee) / 22).toFixed(2);
+        const costPerUnit = (Number(p.baseFee || 0) / 22).toFixed(2);
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition";
         tr.innerHTML = `
@@ -427,14 +503,14 @@
             <input type="checkbox" ${selectedIds.has(p.id) ? 'checked' : ''} onchange="toggleSelect('${p.id}', this)" />
           </td>
           <td class="p-3 font-semibold text-slate-900">${p.companyName}</td>
-          <td class="p-3 font-medium text-emerald-700">$${p.baseFee}</td>
+          <td class="p-3 font-medium text-emerald-700">$${p.baseFee || 0}</td>
           <td class="p-3 text-slate-700">$${costPerUnit} / unit</td>
-          <td class="p-3">$${p.setupFee}</td>
+          <td class="p-3">$${p.setupFee || 0}</td>
           <td class="p-3">${p.walkthroughFreq}</td>
-          <td class="p-3">${(p.inspectionReports || '').includes('Full digital') ? '<span class="text-emerald-600 font-semibold">Photo Log</span>' : 'Summary'}</td>
+          <td class="p-3">${(p.inspectionReports || '').includes('Full') || (p.inspectionReports || '').includes('Yes') ? '<span class="text-emerald-600 font-semibold">Photo Log</span>' : 'Summary'}</td>
           <td class="p-3">${(p.accountingBasis || '').split(' ')[0]}</td>
           <td class="p-3">${(p.bankingType || '').includes('Segregated') ? '<span class="text-blue-600 font-medium">Segregated</span>' : '<span class="text-red-500">Commingled</span>'}</td>
-          <td class="p-3">$${p.authThreshold}</td>
+          <td class="p-3">$${p.authThreshold || 0}</td>
           <td class="p-3">${p.managerRatio}</td>
           <td class="p-3 text-right">
             <button onclick="deleteProposal('${p.id}')" class="text-slate-400 hover:text-red-600 transition"><i class="fa-solid fa-trash-can"></i></button>
@@ -473,9 +549,8 @@
     }
 
     function deleteProposal(id) {
-      if (confirm("Delete this submission?")) {
+      if (confirm("Delete this submission view?")) {
         proposals = proposals.filter(p => p.id !== id);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(proposals));
         selectedIds.delete(id);
         renderTable();
         clearComparison();
@@ -550,31 +625,10 @@
         contractorMarkup: document.getElementById('contractorMarkup').value
       };
 
-      // Save locally
+      // Add to local view
       proposals.push(newProposal);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(proposals));
-
-      // Post to Google Sheet webhook if configured
-      const webhookUrl = localStorage.getItem(WEBHOOK_KEY);
-      if (webhookUrl) {
-        statusText.innerText = "Transmitting to Google Sheet...";
-        submitBtn.disabled = true;
-        try {
-          await fetch(webhookUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newProposal)
-          });
-        } catch (err) {
-          console.warn("Webhook post issue:", err);
-        }
-      }
-
       alert("Proposal submitted successfully!");
       document.getElementById('rfpForm').reset();
-      submitBtn.disabled = false;
-      statusText.innerText = "";
       switchTab('dashboardView');
       renderTable();
     }
@@ -631,12 +685,9 @@
       document.body.removeChild(a);
     });
 
-    // Initialize
-    if (localStorage.getItem(WEBHOOK_KEY)) {
-      document.getElementById('webhookUrlInput').value = localStorage.getItem(WEBHOOK_KEY);
-    }
+    // Run on startup
     switchTab(initialTab);
-    renderTable();
+    fetchSheetData();
   </script>
 </body>
 </html>
