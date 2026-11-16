@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1235 & 1245 W George St - HOA Management RFP Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">HOA RFP</span>
+          <h1 class="text-xl font-bold text-slate-900">1235 & 1245 W George St Condominium Association</h1>
+        </div>
+        <p class="text-xs text-slate-500 mt-0.5">22 Residential Units • Chicago, IL 60657 • Property Management RFP & Financial Intake</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnExportCsv" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded shadow-sm transition">
+          <i class="fa-solid fa-file-excel"></i> Export to CSV / Sheets
+        </button>
+      </div>
+    </div>
+    <!-- Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-6 text-sm">
+      <button onclick="switchTab('formView')" id="tabForm" class="py-3 px-1 text-slate-600 hover:text-slate-900 border-b-2 border-transparent transition">
+        <i class="fa-solid fa-clipboard-list mr-1"></i> Vendor Submission Form
+      </button>
+      <button onclick="switchTab('dashboardView')" id="tabDash" class="tab-active py-3 px-1 border-b-2 border-transparent transition">
+        <i class="fa-solid fa-table-columns mr-1"></i> Board Review & Financial Dashboard
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- SUBMISSION FORM VIEW -->
+    <div id="formView" class="hidden">
+      <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-900 text-white p-6 sm:p-8">
+          <div class="flex justify-between items-start">
+            <div>
+              <h2 class="text-2xl font-bold">HOA Management Formal RFP Submission</h2>
+              <p class="text-slate-300 text-sm mt-1">Please complete all operational, governance, and financial schedule specifications.</p>
+            </div>
+            <button type="button" onclick="fillSampleData()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded transition">
+              <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Autofill Sample Bid
+            </button>
+          </div>
+        </div>
+
+        <form id="rfpForm" onsubmit="handleFormSubmit(event)" class="p-6 sm:p-8 space-y-8">
+          <!-- SECTION 1: Company Profile -->
+          <div>
+            <h3 class="text-base font-semibold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs flex items-center justify-center font-bold">1</span>
+              Company & Credentials
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Company Legal Name *</label>
+                <input required type="text" id="companyName" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Chicago Office Address *</label>
+                <input required type="text" id="officeAddress" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Primary Contact Name & Title *</label>
+                <input required type="text" id="contactName" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Email Address *</label>
+                <input required type="email" id="contactEmail" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Phone Number *</label>
+                <input required type="tel" id="contactPhone" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Years Managing Chicago Associations *</label>
+                <input required type="number" id="yearsInBusiness" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 2: Operations & Onsite Inspections -->
+          <div>
+            <h3 class="text-base font-semibold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs flex items-center justify-center font-bold">2</span>
+              Operations & Physical Inspections
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Walkthrough Frequency *</label>
+                <select id="walkthroughFreq" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="Bi-weekly (2x / month)">Bi-weekly (2x / month)</option>
+                  <option value="Monthly (1x / month)">Monthly (1x / month)</option>
+                  <option value="Weekly (4x / month)">Weekly (4x / month)</option>
+                  <option value="Reactive / As needed only">Reactive / As needed only</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Written & Photo Inspection Logs Provided? *</label>
+                <select id="inspectionReports" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="Yes - Full digital photo report">Yes - Full digital photo report</option>
+                  <option value="Summary text log only">Summary text log only</option>
+                  <option value="No written reports">No written reports</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Portfolio Manager Ratio *</label>
+                <input required type="text" id="managerRatio" placeholder="e.g. 7 properties / manager" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Emergency Dispatch Protocol *</label>
+                <select id="emergencyProtocol" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="24/7 Live Operator Dispatch">24/7 Live Operator Dispatch</option>
+                  <option value="Voicemail Answering Service">Voicemail Answering Service</option>
+                  <option value="Direct Manager Cell Phone">Direct Manager Cell Phone</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-slate-700 font-medium mb-1">Neighbor Dispute & ICPA Rule Enforcement Workflow *</label>
+                <textarea required rows="2" id="disputeWorkflow" placeholder="Explain your notice, hearing, and violation escalation process..." class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 3: Financial Management & Banking -->
+          <div>
+            <h3 class="text-base font-semibold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs flex items-center justify-center font-bold">3</span>
+              Financial Accounting, Banking & Controls
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Accounting Basis *</label>
+                <select id="accountingBasis" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="Accrual Basis (ICPA Recommended)">Accrual Basis (ICPA Recommended)</option>
+                  <option value="Cash Basis Only">Cash Basis Only</option>
+                  <option value="Modified Accrual">Modified Accrual</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Banking Segregation *</label>
+                <select id="bankingType" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="100% Segregated Accounts (Association TIN)">100% Segregated Accounts (Association TIN)</option>
+                  <option value="Master Trust / Commingled">Master Trust / Commingled</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Board Dual-Authorization Threshold ($) *</label>
+                <input required type="number" id="authThreshold" placeholder="e.g. 500" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Monthly Financial Package Delivery Date *</label>
+                <select id="financialDate" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="By 15th of month">By 15th of month</option>
+                  <option value="By 20th of month">By 20th of month</option>
+                  <option value="End of month">End of month</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Mechanics Lien Waiver Verification on A/P? *</label>
+                <select id="lienWaivers" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="Yes - Required before payment">Yes - Required before payment</option>
+                  <option value="Only on major projects (> $2,500)">Only on major projects (> $2,500)</option>
+                  <option value="No lien waiver collection">No lien waiver collection</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Assessment Payment Options *</label>
+                <input required type="text" id="paymentMethods" placeholder="e.g. Free ACH, Portal, Lockbox Check" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 4: Fee Proposal -->
+          <div>
+            <h3 class="text-base font-semibold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs flex items-center justify-center font-bold">4</span>
+              Fee Schedule & Cost Model (22 Units)
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Base Monthly Fee ($/mo) *</label>
+                <input required type="number" id="baseFee" placeholder="e.g. 850" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Onboarding Fee ($ one-time) *</label>
+                <input required type="number" id="setupFee" placeholder="e.g. 500" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Tech / Portal Surcharge ($/mo) *</label>
+                <input required type="number" id="techFee" placeholder="0 if included" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Included Annual Board Meetings *</label>
+                <input required type="number" id="meetingsIncluded" placeholder="e.g. 4" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Additional Meeting Fee ($/mtg) *</label>
+                <input required type="number" id="extraMeetingFee" placeholder="e.g. 150" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Contractor Invoice Markup (%) *</label>
+                <input required type="text" id="contractorMarkup" placeholder="0% if none" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 flex justify-end gap-3">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow transition">
+              Submit Formal Proposal
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboardView">
+      <!-- Metrics row -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Proposals Logged</p>
+          <p id="kpiCount" class="text-2xl font-bold text-slate-900 mt-1">0</p>
+          <span class="text-xs text-blue-600 font-medium">Boutique CAM Specialists</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Average Monthly Base</p>
+          <p id="kpiAvgBase" class="text-2xl font-bold text-slate-900 mt-1">$0</p>
+          <span class="text-xs text-slate-500">Across all candidates</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Current Westward Benchmark</p>
+          <p class="text-2xl font-bold text-amber-600 mt-1">$417 / mo</p>
+          <span class="text-xs text-slate-500">$5,000/yr (Bill-pay only)</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Avg Cost / Unit / Month</p>
+          <p id="kpiAvgUnitCost" class="text-2xl font-bold text-slate-900 mt-1">$0</p>
+          <span class="text-xs text-emerald-600 font-medium">Based on 22 Units</span>
+        </div>
+      </div>
+
+      <!-- Comparison Matrix (Hidden until selected) -->
+      <div id="compareContainer" class="hidden mb-6 bg-blue-50 border border-blue-200 rounded-xl p-5 shadow-sm">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-sm font-bold text-blue-900 flex items-center gap-2">
+            <i class="fa-solid fa-code-compare"></i> Side-by-Side Candidate Evaluation
+          </h3>
+          <button onclick="clearComparison()" class="text-xs text-blue-600 hover:text-blue-800 font-medium">Close Matrix</button>
+        </div>
+        <div id="compareTableWrapper" class="overflow-x-auto bg-white rounded-lg border border-blue-200"></div>
+      </div>
+
+      <!-- Main Spreadsheet Table -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">RFP Proposals Spreadsheet</h2>
+            <p class="text-xs text-slate-500">Select checkboxes to launch side-by-side comparison matrix</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search company or portal..." class="text-xs border rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-blue-500 w-48" />
+            <button onclick="compareSelected()" class="text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium px-3 py-1.5 rounded-lg transition">
+              Compare Selected
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+              <tr>
+                <th class="p-3 w-10 text-center"><input type="checkbox" onchange="toggleSelectAll(this)" /></th>
+                <th class="p-3">Company</th>
+                <th class="p-3">Base ($/mo)</th>
+                <th class="p-3">Cost / Unit / Mo</th>
+                <th class="p-3">Setup ($)</th>
+                <th class="p-3">Walkthroughs</th>
+                <th class="p-3">Photo Logs</th>
+                <th class="p-3">Accounting</th>
+                <th class="p-3">Banking</th>
+                <th class="p-3">Auth Limit</th>
+                <th class="p-3">CAM Ratio</th>
+                <th class="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="proposalsTableBody" class="divide-y divide-slate-200">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Initial Seed Data (realistic proposals)
+    let proposals = [
+      {
+        id: "1",
+        timestamp: "2026-11-16 10:15",
+        companyName: "First Community Management",
+        contactName: "David Miller, VP",
+        contactEmail: "dmiller@firstcomm.com",
+        contactPhone: "(312) 829-8900",
+        officeAddress: "1720 W Division St, Chicago, IL",
+        yearsInBusiness: 24,
+        walkthroughFreq: "Bi-weekly (2x / month)",
+        inspectionReports: "Yes - Full digital photo report",
+        managerRatio: "8 properties / manager",
+        emergencyProtocol: "24/7 Live Operator Dispatch",
+        disputeWorkflow: "Formal written notice, mandatory 14-day cure, hearing notice before fine per ICPA",
+        accountingBasis: "Accrual Basis (ICPA Recommended)",
+        bankingType: "100% Segregated Accounts (Association TIN)",
+        authThreshold: 500,
+        financialDate: "By 15th of month",
+        lienWaivers: "Yes - Required before payment",
+        paymentMethods: "Free ACH Autopay, Mobile App, Check Lockbox",
+        baseFee: 850,
+        setupFee: 500,
+        techFee: 0,
+        meetingsIncluded: 4,
+        extraMeetingFee: 150,
+        contractorMarkup: "0%"
+      },
+      {
+        id: "2",
+        timestamp: "2026-11-16 11:40",
+        companyName: "Connected Management",
+        contactName: "Sarah Jenkins, CAM",
+        contactEmail: "sjenkins@connectedmgmt.com",
+        contactPhone: "(312) 640-9000",
+        officeAddress: "4001 N Ravenswood Ave, Chicago, IL",
+        yearsInBusiness: 18,
+        walkthroughFreq: "Monthly (1x / month)",
+        inspectionReports: "Yes - Full digital photo report",
+        managerRatio: "10 properties / manager",
+        emergencyProtocol: "24/7 Live Operator Dispatch",
+        disputeWorkflow: "Online ticket log, manager outreach call, board escalation with fining schedule",
+        accountingBasis: "Accrual Basis (ICPA Recommended)",
+        bankingType: "100% Segregated Accounts (Association TIN)",
+        authThreshold: 750,
+        financialDate: "By 20th of month",
+        lienWaivers: "Yes - Required before payment",
+        paymentMethods: "AppFolio Online Portal, ACH, Debit/Credit",
+        baseFee: 775,
+        setupFee: 400,
+        techFee: 25,
+        meetingsIncluded: 4,
+        extraMeetingFee: 175,
+        contractorMarkup: "0%"
+      }
+    ];
+
+    let selectedIds = new Set();
+
+    function switchTab(viewId) {
+      document.getElementById('formView').classList.add('hidden');
+      document.getElementById('dashboardView').classList.add('hidden');
+      document.getElementById(viewId).classList.remove('hidden');
+
+      if (viewId === 'formView') {
+        document.getElementById('tabForm').className = "tab-active py-3 px-1 border-b-2 border-transparent transition";
+        document.getElementById('tabDash').className = "py-3 px-1 text-slate-600 hover:text-slate-900 border-b-2 border-transparent transition";
+      } else {
+        document.getElementById('tabDash').className = "tab-active py-3 px-1 border-b-2 border-transparent transition";
+        document.getElementById('tabForm').className = "py-3 px-1 text-slate-600 hover:text-slate-900 border-b-2 border-transparent transition";
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('proposalsTableBody');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      tbody.innerHTML = '';
+
+      const filtered = proposals.filter(p => 
+        p.companyName.toLowerCase().includes(search) || 
+        p.accountingBasis.toLowerCase().includes(search)
+      );
+
+      filtered.forEach(p => {
+        const costPerUnit = (Number(p.baseFee) / 22).toFixed(2);
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="p-3 text-center">
+            <input type="checkbox" ${selectedIds.has(p.id) ? 'checked' : ''} onchange="toggleSelect('${p.id}', this)" />
+          </td>
+          <td class="p-3 font-semibold text-slate-900">${p.companyName}</td>
+          <td class="p-3 font-medium text-emerald-700">$${p.baseFee}</td>
+          <td class="p-3 text-slate-700">$${costPerUnit} / unit</td>
+          <td class="p-3">$${p.setupFee}</td>
+          <td class="p-3">${p.walkthroughFreq}</td>
+          <td class="p-3">${p.inspectionReports.includes('Full digital') ? '<span class="text-emerald-600 font-semibold">Photo Log</span>' : 'Summary'}</td>
+          <td class="p-3">${p.accountingBasis.split(' ')[0]}</td>
+          <td class="p-3">${p.bankingType.includes('Segregated') ? '<span class="text-blue-600 font-medium">Segregated</span>' : '<span class="text-red-500">Commingled</span>'}</td>
+          <td class="p-3">$${p.authThreshold}</td>
+          <td class="p-3">${p.managerRatio}</td>
+          <td class="p-3 text-right">
+            <button onclick="deleteProposal('${p.id}')" class="text-slate-400 hover:text-red-600 transition"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateKPIs();
+    }
+
+    function updateKPIs() {
+      document.getElementById('kpiCount').innerText = proposals.length;
+      if (proposals.length === 0) {
+        document.getElementById('kpiAvgBase').innerText = "$0";
+        document.getElementById('kpiAvgUnitCost').innerText = "$0";
+        return;
+      }
+      const totalBase = proposals.reduce((sum, p) => sum + Number(p.baseFee), 0);
+      const avgBase = Math.round(totalBase / proposals.length);
+      const avgUnitCost = (avgBase / 22).toFixed(2);
+
+      document.getElementById('kpiAvgBase').innerText = `$${avgBase} / mo`;
+      document.getElementById('kpiAvgUnitCost').innerText = `$${avgUnitCost}`;
+    }
+
+    function toggleSelect(id, checkbox) {
+      if (checkbox.checked) selectedIds.add(id);
+      else selectedIds.delete(id);
+    }
+
+    function toggleSelectAll(master) {
+      if (master.checked) proposals.forEach(p => selectedIds.add(p.id));
+      else selectedIds.clear();
+      renderTable();
+    }
+
+    function deleteProposal(id) {
+      if (confirm("Delete this submission?")) {
+        proposals = proposals.filter(p => p.id !== id);
+        selectedIds.delete(id);
+        renderTable();
+        clearComparison();
+      }
+    }
+
+    function compareSelected() {
+      const candidates = proposals.filter(p => selectedIds.has(p.id));
+      if (candidates.length < 2) {
+        alert("Please check at least 2 proposals in the table to compare.");
+        return;
+      }
+      const wrapper = document.getElementById('compareTableWrapper');
+      let html = `<table class="w-full text-xs text-left">
+        <thead>
+          <tr class="bg-blue-100 text-blue-900 border-b border-blue-200">
+            <th class="p-3 font-bold w-48">Evaluation Metric</th>
+            ${candidates.map(c => `<th class="p-3 font-bold">${c.companyName}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr><td class="p-3 font-semibold bg-slate-50">Base Monthly Fee</td>${candidates.map(c => `<td class="p-3 font-bold text-emerald-700">$${c.baseFee}/mo</td>`).join('')}</tr>
+          <tr><td class="p-3 font-semibold bg-slate-50">Per-Unit Cost (22 Units)</td>${candidates.map(c => `<td class="p-3 font-semibold">$${(c.baseFee/22).toFixed(2)}/unit</td>`).join('')}</tr>
+          <tr><td class="p-3 font-semibold bg-slate-50">Walkthrough Routine</td>${candidates.map(c => `<td class="p-3">${c.walkthroughFreq}</td>`).join('')}</tr>
+          <tr><td class="p-3 font-semibold bg-slate-50">Inspection Logs</td>${candidates.map(c => `<td class="p-3">${c.inspectionReports}</td>`).join('')}</tr>
+          <tr><td class="p-3 font-semibold bg-slate-50">Accounting Basis</td>${candidates.map(c => `<td class="p-3">${c.accountingBasis}</td>`).join('')}</tr>
+          <tr><td class="p-3 font-semibold bg-slate-50">Bank Account Setup</td>${candidates.map(c => `<td class="p-3">${c.bankingType}</td>`).join('')}</tr>
+          <tr><td class="p-3 font-semibold bg-slate-50">Board Auth Limit</td>${candidates.map(c => `<td class="p-3">$${c.authThreshold}</td>`).join('')}</tr>
+          <tr><td class="p-3 font-semibold bg-slate-50">Emergency Protocol</td>${candidates.map(c => `<td class="p-3">${c.emergencyProtocol}</td>`).join('')}</tr>
+          <tr><td class="p-3 font-semibold bg-slate-50">Contractor Markup</td>${candidates.map(c => `<td class="p-3 font-semibold">${c.contractorMarkup}</td>`).join('')}</tr>
+        </tbody>
+      </table>`;
+
+      wrapper.innerHTML = html;
+      document.getElementById('compareContainer').classList.remove('hidden');
+    }
+
+    function clearComparison() {
+      document.getElementById('compareContainer').classList.add('hidden');
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const newProposal = {
+        id: String(Date.now()),
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        companyName: document.getElementById('companyName').value,
+        contactName: document.getElementById('contactName').value,
+        contactEmail: document.getElementById('contactEmail').value,
+        contactPhone: document.getElementById('contactPhone').value,
+        officeAddress: document.getElementById('officeAddress').value,
+        yearsInBusiness: Number(document.getElementById('yearsInBusiness').value),
+        walkthroughFreq: document.getElementById('walkthroughFreq').value,
+        inspectionReports: document.getElementById('inspectionReports').value,
+        managerRatio: document.getElementById('managerRatio').value,
+        emergencyProtocol: document.getElementById('emergencyProtocol').value,
+        disputeWorkflow: document.getElementById('disputeWorkflow').value,
+        accountingBasis: document.getElementById('accountingBasis').value,
+        bankingType: document.getElementById('bankingType').value,
+        authThreshold: Number(document.getElementById('authThreshold').value),
+        financialDate: document.getElementById('financialDate').value,
+        lienWaivers: document.getElementById('lienWaivers').value,
+        paymentMethods: document.getElementById('paymentMethods').value,
+        baseFee: Number(document.getElementById('baseFee').value),
+        setupFee: Number(document.getElementById('setupFee').value),
+        techFee: Number(document.getElementById('techFee').value),
+        meetingsIncluded: Number(document.getElementById('meetingsIncluded').value),
+        extraMeetingFee: Number(document.getElementById('extraMeetingFee').value),
+        contractorMarkup: document.getElementById('contractorMarkup').value
+      };
+
+      proposals.push(newProposal);
+      alert("Proposal submitted and logged successfully!");
+      document.getElementById('rfpForm').reset();
+      switchTab('dashboardView');
+      renderTable();
+    }
+
+    function fillSampleData() {
+      document.getElementById('companyName').value = "Prairie Shores Property Management";
+      document.getElementById('officeAddress').value = "2211 N Lincoln Ave, Chicago, IL";
+      document.getElementById('contactName').value = "Elena Rostova, Senior CAM";
+      document.getElementById('contactEmail').value = "erostova@prairieshorescam.com";
+      document.getElementById('contactPhone').value = "(312) 555-0199";
+      document.getElementById('yearsInBusiness').value = 14;
+      document.getElementById('walkthroughFreq').value = "Bi-weekly (2x / month)";
+      document.getElementById('inspectionReports').value = "Yes - Full digital photo report";
+      document.getElementById('managerRatio').value = "6 properties / manager";
+      document.getElementById('emergencyProtocol').value = "24/7 Live Operator Dispatch";
+      document.getElementById('disputeWorkflow').value = "Dedicated portal dispute ticketing, certified ICPA violation notice, hearing board packet.";
+      document.getElementById('accountingBasis').value = "Accrual Basis (ICPA Recommended)";
+      document.getElementById('bankingType').value = "100% Segregated Accounts (Association TIN)";
+      document.getElementById('authThreshold').value = 500;
+      document.getElementById('financialDate').value = "By 15th of month";
+      document.getElementById('lienWaivers').value = "Yes - Required before payment";
+      document.getElementById('paymentMethods').value = "Free ACH autopay, resident app, lockbox";
+      document.getElementById('baseFee').value = 825;
+      document.getElementById('setupFee').value = 450;
+      document.getElementById('techFee').value = 0;
+      document.getElementById('meetingsIncluded').value = 4;
+      document.getElementById('extraMeetingFee').value = 150;
+      document.getElementById('contractorMarkup').value = "0%";
+    }
+
+    // Export to CSV
+    document.getElementById('btnExportCsv').addEventListener('click', () => {
+      if (proposals.length === 0) {
+        alert("No proposals to export.");
+        return;
+      }
+      const headers = Object.keys(proposals[0]);
+      let csv = headers.join(',') + '\n';
+      proposals.forEach(p => {
+        const row = headers.map(h => {
+          let val = String(p[h] ?? '').replace(/"/g, '""');
+          return `"${val}"`;
+        });
+        csv += row.join(',') + '\n';
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `HOA_RFP_Proposals_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+
+    // Initialize
+    renderTable();
+  </script>
+</body>
+</html>
